@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+
+        <RelativeLayout
+            android:id="@+id/animation_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/txtNoData"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_gravity="center_horizontal"
+                android:fontFamily="@font/sf_pro_display_bold"
+                android:gravity="center"
+                android:text="No Data Found"
+                android:textColor="@color/textColorBlack"
+                android:textSize="@dimen/_16sdp" />
+
+            <ImageView
+                android:id="@+id/imgNoData"
+                android:layout_width="@dimen/_170sdp"
+                android:layout_height="@dimen/_170sdp"
+                android:layout_below="@+id/txtNoData"
+                android:layout_centerHorizontal="true"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:gravity="center"
+                android:src="@drawable/no_data_twoe" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/imgNoData"
+                android:layout_centerHorizontal="true"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:fontFamily="@font/sf_pro_display_bold"
+                android:gravity="center"
+                android:text="If no data found at this location than change the location. And try again"
+                android:textColor="@color/textColorBlack"
+                android:textSize="@dimen/_12sdp" />
+
+        </RelativeLayout>
+
+        <FrameLayout
+            android:id="@+id/frameLayout_register"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_marginTop="10dp">
+
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/shimmerFramlayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:shimmer_repeat_mode="restart">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <include layout="@layout/shimmer_layout1"></include>
+
+                    <include layout="@layout/shimmer_layout1"></include>
+
+                    <include layout="@layout/shimmer_layout1"></include>
+
+                    <include layout="@layout/shimmer_layout1"></include>
+
+                    <include layout="@layout/shimmer_layout1"></include>
+
+                    <include layout="@layout/shimmer_layout1"></include>
+
+                    <include layout="@layout/shimmer_layout1"></include>
+
+                    <include layout="@layout/shimmer_layout1"></include>
+
+                </LinearLayout>
+            </com.facebook.shimmer.ShimmerFrameLayout>
+
+
+            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/swipeToRefresh_reg"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="visible">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerView_reg"
+                        android:layout_width="match_parent"
+                        android:layout_weight="90"
+                        android:layout_height="0dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="15dp">
+
+
+                        <TextView
+                            android:id="@+id/text_press"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:text="@string/text_press"
+                            android:textColor="@color/black"
+                            android:textSize="12dp" />
+
+
+                        <ImageView
+                            android:id="@+id/image_setting"
+                            android:tint="@color/yellow_bottom"
+                            android:layout_marginRight="@dimen/_5sdp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/setting" />
+
+                    </LinearLayout>
+
+
+                </LinearLayout>
+
+            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        </FrameLayout>
+
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/overflowMenu"
+        android:icon="@drawable/more"
+        android:title=""
+        app:showAsAction="always">
+        <menu>
+<!--            <item-->
+<!--                android:id="@+id/view_add"-->
+<!--                android:icon="@drawable/baseline_add_24"-->
+<!--                app:iconTint="@color/green_bottom"-->
+<!--                android:title="Add Member "-->
+<!--                app:showAsAction="never" />-->
+            <item
+                android:id="@+id/view_delete"
+                android:icon="@drawable/ic_baseline_delete_24"
+                app:iconTint="@color/red_bottom"
+                android:title="Remove Member" />
+
+            <item
+                android:id="@+id/view_permissions"
+                android:icon="@drawable/ic_baseline_lock_open_24"
+                app:iconTint="@color/blue_bottom"
+                android:title="Permissions" />
+        </menu>
+    </item>
+</menu>

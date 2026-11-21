@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+
+    <!--    <com.mancj.materialsearchbar.MaterialSearchBar-->
+    <!--        android:id="@+id/searchBar"-->
+    <!--        style="@style/MaterialSearchBarLight"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginStart="@dimen/_10sdp"-->
+    <!--        android:layout_marginTop="@dimen/_10sdp"-->
+    <!--        android:layout_marginEnd="20dp"-->
+    <!--        android:layout_marginBottom="10dp"-->
+    <!--        android:elevation="3dp"-->
+    <!--        android:visibility="gone"-->
+    <!--        android:outlineProvider="bounds"-->
+    <!--        app:mt_hint="Search place"-->
+    <!--        app:mt_maxSuggestionsCount="15"-->
+    <!--        app:mt_navIconEnabled="false"-->
+    <!--        app:mt_placeholder="Search place"-->
+    <!--        app:mt_placeholderColor="@color/gray"-->
+    <!--        app:mt_roundedSearchBarEnabled="false"-->
+    <!--        app:mt_speechMode="false" />-->
+
+
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="56dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <!--    <com.google.android.material.bottomnavigation.BottomNavigationView-->
+    <!--        android:id="@+id/bottomNavigationView"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="60dp"-->
+    <!--        app:itemBackground="@drawable/allotbuttonyellow"-->
+    <!--        android:background="@color/colorPrimary"-->
+    <!--        app:itemIconTint="@color/white"-->
+    <!--        app:itemTextColor="@color/white"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintHorizontal_bias="0.0"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:menu="@menu/navigation"-->
+    <!--        app:sbb_textSize="@dimen/_9sdp"-->
+    <!--        android:layout_gravity="bottom" />-->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|bottom"
+        android:layout_marginStart="15dp"
+        android:layout_marginBottom="75dp"
+        android:visibility="gone"
+        android:src="@drawable/baseline_people_outline_24"
+        tools:ignore="ContentDescription" />
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_gallery"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|bottom"
+        android:layout_marginStart="15dp"
+        android:layout_marginBottom="75dp"
+        android:src="@drawable/baseline_burst_mode_24"
+        tools:ignore="ContentDescription" />
+
+    <LinearLayout
+        android:id="@+id/root_layout"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_gravity="bottom"
+        android:background="@color/red_bottom"
+        android:orientation="horizontal"
+        android:paddingTop="@dimen/_2sdp">
+
+        <LinearLayout
+            android:id="@+id/first"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:background="@color/red_bottom"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/iconFirst"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_placetogo"
+                app:tint="@color/white" />
+
+            <TextView
+                android:id="@+id/textFirst"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/sf_pro_display_medium"
+                android:text="Places"
+                android:textColor="@color/white"
+                android:textSize="@dimen/_9sdp"
+                tools:text="Places" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/second"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/white"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/iconSecond"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_advisory"
+                app:tint="@color/black" />
+
+            <TextView
+                android:id="@+id/textSecond"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/sf_pro_display_medium"
+                android:text="Advisory"
+                android:textColor="@color/textColorBlack"
+                android:textSize="@dimen/_9sdp"
+                tools:text="Advisory" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/third"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/white"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/iconThird"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_planner"
+                app:tint="@color/black" />
+
+            <TextView
+                android:id="@+id/textThird"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/sf_pro_display_medium"
+                android:text="Travel"
+                android:textColor="@color/textColorBlack"
+                android:textSize="@dimen/_9sdp"
+                tools:text="Planner" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/fourth"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/white"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/iconFourth"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:src="@drawable/baseline_attractions_24"
+                app:tint="@color/black" />
+
+            <TextView
+                android:id="@+id/textFourth"
+                android:layout_width="wrap_content"
+                android:layout_height="21dp"
+                android:fontFamily="@font/sf_pro_display_medium"
+                android:text="Perks"
+                android:textColor="@color/textColorBlack"
+                android:textSize="@dimen/_9sdp"
+                tools:text="Galaxy" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+
+    <!--    </com.google.android.material.bottomappbar.BottomAppBar>-->
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

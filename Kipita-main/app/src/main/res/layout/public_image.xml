@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:orientation="vertical"
+    android:padding="@dimen/_5sdp">
+
+
+    <FrameLayout
+        android:id="@+id/frameLayout_register"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/_5sdp"
+            android:orientation="vertical">
+
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/shimmerFramlayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone"
+                app:shimmer_repeat_mode="restart">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <include layout="@layout/shimmer_layout1"></include>
+
+                    <include layout="@layout/shimmer_layout1"></include>
+
+                    <include layout="@layout/shimmer_layout1"></include>
+
+                    <include layout="@layout/shimmer_layout1"></include>
+
+                    <include layout="@layout/shimmer_layout1"></include>
+
+                    <include layout="@layout/shimmer_layout1"></include>
+
+                    <include layout="@layout/shimmer_layout1"></include>
+
+                    <include layout="@layout/shimmer_layout1"></include>
+
+                </LinearLayout>
+            </com.facebook.shimmer.ShimmerFrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top"
+                android:layout_marginBottom="7dp"
+                android:gravity="top"
+                android:orientation="horizontal"
+                android:weightSum="100">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="@dimen/_4sdp"
+                    android:layout_marginRight="@dimen/_5sdp"
+                    android:layout_weight="50"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <com.chivorn.smartmaterialspinner.SmartMaterialSpinner
+                        android:layout_width="match_parent"
+                        android:id="@+id/radiusSpinner"
+                        android:layout_height="wrap_content"
+                        app:smsp_hint="Select Radius"
+                        android:backgroundTint="@color/custom_bg"
+                        app:smsp_floatingLabelColor="@color/black"
+                        app:smsp_floatingLabelText="Select Radius"
+                        app:smsp_itemColor="@color/black"
+                        app:smsp_outlinedBoxColor="@color/outer_space"
+                        app:smsp_itemListColor="@color/black"
+                        app:smsp_itemListHintBackgroundColor="#808080"
+                        app:smsp_itemListHintColor="#FFFFFF" />
+
+
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="@dimen/_5sdp"
+                    android:layout_marginRight="@dimen/_6sdp"
+                    android:layout_weight="50"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+
+                    <com.chivorn.smartmaterialspinner.SmartMaterialSpinner
+                        android:layout_width="match_parent"
+                        android:id="@+id/tagSpinner"
+                        app:smsp_hint="Filter by Tag"
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="@color/custom_bg"
+                        app:smsp_floatingLabelColor="@color/black"
+                        app:smsp_floatingLabelText="Filter by Tag"
+                        app:smsp_itemColor="@color/black"
+                        app:smsp_outlinedBoxColor="@color/outer_space"
+                        app:smsp_itemListColor="@color/black"
+                        app:smsp_itemListHintBackgroundColor="#808080"
+                        app:smsp_itemListHintColor="#FFFFFF" />
+
+
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top"
+                android:layout_marginBottom="10dp"
+                android:gravity="top"
+                android:orientation="horizontal"
+                android:weightSum="100">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="@dimen/_4sdp"
+                    android:layout_marginRight="@dimen/_5sdp"
+                    android:layout_weight="50"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+
+                    <com.chivorn.smartmaterialspinner.SmartMaterialSpinner
+                        android:layout_width="match_parent"
+                        android:id="@+id/locationSpinner"
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="@color/custom_bg"
+                        app:smsp_floatingLabelColor="@color/black"
+                        app:smsp_floatingLabelText="Filter by Location"
+                        app:smsp_hint="Filter by Location"
+                        app:smsp_itemColor="@color/black"
+                        app:smsp_outlinedBoxColor="@color/outer_space"
+                        app:smsp_itemListColor="@color/black"
+                        app:smsp_itemListHintBackgroundColor="#808080"
+                        app:smsp_itemListHintColor="#FFFFFF" />
+
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="@dimen/_5sdp"
+                    android:layout_marginRight="@dimen/_6sdp"
+                    android:layout_weight="50"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+
+                    <com.chivorn.smartmaterialspinner.SmartMaterialSpinner
+                        android:layout_width="match_parent"
+                        android:id="@+id/timeSpinner"
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="@color/custom_bg"
+                        app:smsp_floatingLabelColor="@color/black"
+                        app:smsp_floatingLabelText="Filter by Time"
+                        app:smsp_hint="Filter by Time"
+                        app:smsp_itemColor="@color/black"
+                        app:smsp_outlinedBoxColor="@color/outer_space"
+                        app:smsp_itemListColor="@color/black"
+                        app:smsp_itemListHintBackgroundColor="#808080"
+                        app:smsp_itemListHintColor="#FFFFFF" />
+
+
+
+                </LinearLayout>
+            </LinearLayout>
+
+            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/swipeToRefresh_reg"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="visible">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/animation_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="@dimen/_10sdp"
+                        android:layout_marginTop="@dimen/_10sdp"
+                        android:layout_marginEnd="@dimen/_10sdp"
+                        android:layout_marginBottom="@dimen/_10sdp"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/txtNoData"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerHorizontal="true"
+                            android:layout_gravity="center_horizontal"
+                            android:fontFamily="@font/sf_pro_display_bold"
+                            android:gravity="center"
+                            android:text="No Data Found"
+                            android:textColor="@color/textColorBlack"
+                            android:textSize="@dimen/_16sdp" />
+
+                        <ImageView
+                            android:layout_width="@dimen/_170sdp"
+                            android:layout_height="@dimen/_170sdp"
+                            android:layout_centerInParent="true"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:scaleType="fitXY"
+                            android:src="@drawable/no_data_threee" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/imgNoData"
+                            android:layout_centerHorizontal="true"
+                            android:layout_gravity="center"
+                            android:layout_marginTop="@dimen/_10sdp"
+                            android:fontFamily="@font/sf_pro_display_bold"
+                            android:gravity="center"
+                            android:text="If no data found at this location than change the location. And try again"
+                            android:textColor="@color/textColorBlack"
+                            android:textSize="@dimen/_12sdp" />
+                    </LinearLayout>
+
+                    <FrameLayout
+                        android:id="@+id/frameLayout_myImg"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_above="@+id/recyclerView_reg"
+                        android:layout_alignParentTop="true"
+                        android:layout_centerHorizontal="true">
+
+                        <ImageView
+                            android:id="@+id/myImg"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:scaleType="fitCenter" />
+                    </FrameLayout>
+
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/fab"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_above="@+id/recyclerView_reg"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_margin="@dimen/card_margin"
+                        android:background="@color/blue"
+                        android:backgroundTint="@color/white"
+                        android:foregroundTint="@color/white"
+                        android:src="@drawable/ic_baseline_add_a_photo_24"
+                        app:rippleColor="@color/blue" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerView_reg"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:layout_centerHorizontal="true"
+                        android:orientation="horizontal"
+                        tools:listitem="@layout/public_image_list" />
+
+                </RelativeLayout>
+            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        </LinearLayout>
+    </FrameLayout>
+</LinearLayout>

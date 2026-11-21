@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical"
+    android:weightSum="100">
+
+    <com.mancj.materialsearchbar.MaterialSearchBar
+        android:id="@+id/searchBar"
+        style="@style/MaterialSearchBarLight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="10dp"
+        android:elevation="3dp"
+        android:outlineProvider="bounds"
+        app:mt_hint="Search place"
+        app:mt_maxSuggestionsCount="15"
+        app:mt_navIconEnabled="false"
+        app:mt_placeholder="Search place"
+        app:mt_placeholderColor="@color/textColorGreyNew"
+        app:mt_roundedSearchBarEnabled="false"
+        app:mt_speechMode="false" />
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/_40sdp"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="OR"
+        android:textSize="@dimen/_15sdp"
+        android:textColor="@color/textColorGreyNew"
+        android:fontFamily="@font/sf_pro_display_bold" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="Click the button below to use your GPS location"
+        android:textSize="@dimen/_12sdp"
+        android:textColor="@color/textColorGreyNew"
+        android:layout_marginLeft="@dimen/_30sdp"
+        android:layout_marginTop="@dimen/_5sdp"
+        android:layout_marginRight="@dimen/_30sdp"
+        android:fontFamily="@font/sf_pro_display_semibold" />
+    <Button
+        android:id="@+id/currentLocationBtn"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_38sdp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginLeft="@dimen/_30sdp"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:layout_marginRight="@dimen/_30sdp"
+        android:background="@drawable/allotbuttongreen"
+        android:fontFamily="@font/sf_pro_display_bold"
+        android:minWidth="@dimen/_220sdp"
+        android:minHeight="@dimen/_45sdp"
+        android:paddingLeft="@dimen/_20sdp"
+        android:paddingRight="@dimen/_20sdp"
+        android:text="Use My Current Location"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_12sdp" />
+
+</LinearLayout>
+
+</LinearLayout>
