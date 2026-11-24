@@ -19,7 +19,6 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.gson.Gson
 import com.mytum.MyApplication
@@ -28,6 +27,7 @@ import com.mytum.adapter.GroupMemberAdapter
 import com.mytum.model.GroupListRewuest
 import com.mytum.model.MamberManageItemObject
 import com.mytum.network.RetrofitClient
+import com.mytum.proectUtil.LocationPermissions
 import com.mytum.proectUtil.ProjectUtil
 import com.mytum.utils.MapWrapperLayout
 import org.apache.http.client.HttpClient
@@ -37,7 +37,6 @@ import org.apache.http.impl.client.DefaultHttpClient
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
-import java.util.Objects
 
 
 class LocationMapFragment : Fragment(), OnMapReadyCallback {
@@ -49,7 +48,6 @@ class LocationMapFragment : Fragment(), OnMapReadyCallback {
     var dataList: ArrayList<MamberManageItemObject> = ArrayList()
     var categoryAdapter: GroupMemberAdapter? = null
     private var mMap: GoogleMap? = null
-    var mPointMarker: Marker? = null
 
 
     override fun onCreateView(
@@ -62,18 +60,17 @@ class LocationMapFragment : Fragment(), OnMapReadyCallback {
         toolbar_home = view.findViewById(R.id.toolbar_home)
         mapWrapperLayout = view.findViewById(R.id.rl_map)
         customDialog = activity?.let { Dialog(it) }
-        setUpMap()
         return view
     }
 
     override fun onResume() {
         super.onResume()
+        updateMyLocationLayer()
         allEntertainmentData1
     }
 
     @SuppressLint("SetTextI18n")
     fun reresh(data: String) {
-        dataList.removeAll(dataList.toSet())
         dataList.clear()
         try {
             val j = data.replace("\\\\".toRegex(), "")
@@ -98,64 +95,30 @@ class LocationMapFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun displayVehicleNo() {
-        try {
-            for (i in dataList.indices) {
-                val objectItem: MamberManageItemObject = dataList[i]
-                try {
-                    val mString = objectItem.lastLocation!!.split(",").toTypedArray()
-                    val  name = objectItem.name;
-                    if (mString.isNotEmpty()) {
-                        val lat: Double = mString[0].toDouble()
-                        val lng: Double = mString[1].toDouble()
-                        addMarkerNo(lat, lng, name,i)
-                    }
-                } catch (ignored: NumberFormatException) {
-                }
-            }
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    @SuppressLint("PotentialBehaviorOverride")
-    fun addMarkerNo(
-        lat: Double,
-        lng: Double,
-        name: String,
-        i: Int
-    ) {
-        val latLng = LatLng(lat, lng)
-//        mMap?.addMarker(
-//            MarkerOptions()
-//                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-//                .position(latLng)
-//                .draggable(false)
-//        )
-        if (i == 0) {
-            mMap!!.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lng), 8f))
-        }
-
-        val bitmapdraw = ContextCompat.getDrawable(
-            requireActivity(),
-            R.drawable.icon_map_pin_everythingcivic
-        ) as BitmapDrawable?
-        val b = bitmapdraw!!.bitmap
-        val smallMarker = Bitmap.createScaledBitmap(b, 70, 70, false)
-        val markerOptions = MarkerOptions()
-        markerOptions.position(latLng)
-        mPointMarker = mMap!!.addMarker(
-            MarkerOptions().position(latLng)
-                .title(name)
-                .visible(true) //                .snippet(addressNew)
-                .flat(true)
-                .icon(BitmapDescriptorFactory.fromBitmap(smallMarker))
-                .anchor(0.5f, 1.0f)
+        val map = mMap ?: return
+        map.clear()
+        val bitmap = ContextCompat.getDrawable(
+            requireContext(), R.drawable.icon_map_pin_everythingcivic
+        ) as BitmapDrawable
+        val icon = BitmapDescriptorFactory.fromBitmap(
+            Bitmap.createScaledBitmap(bitmap.bitmap, 70, 70, false)
         )
-        mPointMarker!!.showInfoWindow()
-
-        //        mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter(LocationOnMapActivity.this));
-        mMap!!.setOnMarkerClickListener(onMarkerClickedListener)
-
+        var firstPosition: LatLng? = null
+        for (member in dataList) {
+            val coordinates = member.lastLocation?.split(',') ?: continue
+            if (coordinates.size != 2) continue
+            val latitude = coordinates[0].toDoubleOrNull() ?: continue
+            val longitude = coordinates[1].toDoubleOrNull() ?: continue
+            if (latitude !in -90.0..90.0 || longitude !in -180.0..180.0) continue
+            val position = LatLng(latitude, longitude)
+            val marker = map.addMarker(
+                MarkerOptions().position(position).title(member.name)
+                    .flat(true).icon(icon).anchor(0.5f, 1f)
+            )
+            marker?.showInfoWindow()
+            if (firstPosition == null) firstPosition = position
+        }
+        firstPosition?.let { map.moveCamera(CameraUpdateFactory.newLatLngZoom(it, 8f)) }
     }
 
     private val onMarkerClickedListener =
@@ -207,19 +170,11 @@ class LocationMapFragment : Fragment(), OnMapReadyCallback {
             }
         }
 
-    private fun setUpMap() {
-        if (mMap == null) {
-            (Objects.requireNonNull(
-                childFragmentManager.findFragmentById(R.id.bin_location_map)
-            ) as SupportMapFragment).getMapAsync(
-                this
-            )
-        }
-    }
-
     @SuppressLint("UseRequireInsteadOfGet")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        (childFragmentManager.findFragmentById(R.id.bin_location_map) as SupportMapFragment)
+            .getMapAsync(this)
         toolbar_home!!.setTitle(title)
         toolbar_home!!.setTitleTextColor(resources.getColor(R.color.black))
         toolbar_home!!.setNavigationIcon(R.drawable.ic_backarrow_sub_menu) // need to set the icon here to have a navigation icon. You can simple create an vector image by "Vector Asset" and using here
@@ -230,38 +185,39 @@ class LocationMapFragment : Fragment(), OnMapReadyCallback {
     }
 
     override fun onMapReady(map: GoogleMap) {
-        if (mMap != null) {
-            return
-        }
+        val context = context ?: return
+        if (view == null) return
         mMap = map
-        mMap!!.mapType = GoogleMap.MAP_TYPE_NORMAL
-        mMap!!.moveCamera(
-            CameraUpdateFactory.newLatLngZoom(
-                LatLng(
-                    ProjectUtil.getLotitude(
-                        MyApplication.getInstance().applicationContext
-                    ).toDouble(),
-                    ProjectUtil.getLongitude(MyApplication.getInstance().applicationContext)
-                        .toDouble()
-                ), 13f
-            )
-        )
-        mapWrapperLayout?.init(
-            this.mMap,
-            getPixelsFromDp(
-                requireActivity(),
-                20f
-            )
-        )
-        startMap()
+        map.mapType = GoogleMap.MAP_TYPE_NORMAL
+        val latitude = ProjectUtil.getLotitude(context).toDoubleOrNull()
+        val longitude = ProjectUtil.getLongitude(context).toDoubleOrNull()
+        if (latitude != null && longitude != null &&
+            latitude in -90.0..90.0 && longitude in -180.0..180.0
+        ) {
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(latitude, longitude), 13f))
+        }
+        mapWrapperLayout?.init(map, getPixelsFromDp(context, 20f))
+        map.uiSettings.isCompassEnabled = true
+        map.uiSettings.isZoomControlsEnabled = true
+        map.setOnMarkerClickListener(onMarkerClickedListener)
+        updateMyLocationLayer()
+        displayVehicleNo()
     }
 
     @SuppressLint("MissingPermission")
-    private fun startMap() {
-        mMap!!.isMyLocationEnabled = false
-        mMap!!.uiSettings.isCompassEnabled = true
-        mMap!!.uiSettings.isZoomControlsEnabled = true
-        mMap!!.uiSettings.isMyLocationButtonEnabled = true
+    private fun updateMyLocationLayer() {
+        val map = mMap ?: return
+        val context = context ?: return
+        val permitted = LocationPermissions.isGranted(context)
+        map.isMyLocationEnabled = permitted
+        map.uiSettings.isMyLocationButtonEnabled = permitted
+    }
+
+    override fun onDestroyView() {
+        mMap = null
+        mapWrapperLayout = null
+        toolbar_home = null
+        super.onDestroyView()
     }
 
     fun getPixelsFromDp(context: Context, dp: Float): Int {

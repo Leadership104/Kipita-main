@@ -1,5 +1,6 @@
 package com.mytum.fragment
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Build
 import android.os.Bundle
@@ -11,8 +12,12 @@ import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.AutocompletePrediction
@@ -26,7 +31,7 @@ import com.mancj.materialsearchbar.MaterialSearchBar
 import com.mancj.materialsearchbar.adapter.SuggestionsAdapter
 import com.mytum.MainActivity
 import com.mytum.MyApplication
-import com.mytum.proectUtil.GPSTracker
+import com.mytum.proectUtil.LocationPermissions
 import com.mytum.proectUtil.ProjectUtil
 import com.mytum.R
 import java.util.*
@@ -34,6 +39,12 @@ import java.util.*
 class LoactionFragment : AppCompatActivity() {
 
     private var currentLocationBtn: Button? = null
+    private var locationCancellation: CancellationTokenSource? = null
+    private val locationPermissionRequest = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) {
+        if (LocationPermissions.isGranted(this)) fetchCurrentLocation()
+    }
     private var materialSearchBar: MaterialSearchBar? = null
     private val mCountry = ""
     private var placesClient: PlacesClient? = null
@@ -208,31 +219,44 @@ class LoactionFragment : AppCompatActivity() {
             override fun OnItemDeleteListener(position: Int, v: View) {}
         })
 
-        currentLocationBtn!!.setOnClickListener { view: View? ->
-            MainActivity.shouldUseCurrentLocation = true
-            fetchCurrentLocation()
-        }
-
-
-    }
-
-
-    fun fetchCurrentLocation() {
-        var mGPS = GPSTracker(this)
-        if (mGPS.canGetLocation()) {
-            mGPS.location
-            ProjectUtil.setLongitude(this@LoactionFragment, "" + mGPS.longitude)
-            ProjectUtil.setLotitude(this@LoactionFragment, "" + mGPS.latitude)
-//            var address = ProjectUtil.getAddress(
-//                ProjectUtil.getLotitude(MyApplication.getInstance().applicationContext),
-//                ProjectUtil.getLongitude(MyApplication.getInstance().applicationContext)
-//            )
-            setResult(Activity.RESULT_OK)
-            finish()
-        } else {
-            println("Unable")
+        currentLocationBtn?.setOnClickListener {
+            if (LocationPermissions.isGranted(this)) {
+                fetchCurrentLocation()
+            } else {
+                locationPermissionRequest.launch(LocationPermissions.foregroundPermissions())
+            }
         }
     }
 
+    @SuppressLint("MissingPermission")
+    private fun fetchCurrentLocation() {
+        val cancellation = CancellationTokenSource()
+        locationCancellation = cancellation
+        currentLocationBtn?.isEnabled = false
+        LocationServices.getFusedLocationProviderClient(this)
+            .getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, cancellation.token)
+            .addOnCompleteListener(this) { result ->
+                locationCancellation = null
+                currentLocationBtn?.isEnabled = true
+                val location = if (result.isSuccessful) result.result else null
+                if (location == null) {
+                    Toast.makeText(this, R.string.current_location_unavailable, Toast.LENGTH_SHORT).show()
+                    return@addOnCompleteListener
+                }
+                MainActivity.shouldUseCurrentLocation = true
+                ProjectUtil.setLotitude(this, location.latitude.toString())
+                ProjectUtil.setLongitude(this, location.longitude.toString())
+                ProjectUtil.setCurrentLotitude(this, location.latitude.toString())
+                ProjectUtil.setCurrentLongitude(this, location.longitude.toString())
+                setResult(Activity.RESULT_OK)
+                finish()
+            }
+    }
 
+    override fun onStop() {
+        locationCancellation?.cancel()
+        locationCancellation = null
+        currentLocationBtn?.isEnabled = true
+        super.onStop()
+    }
 }

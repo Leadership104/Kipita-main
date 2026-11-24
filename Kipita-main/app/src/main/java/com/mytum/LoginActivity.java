@@ -59,6 +59,7 @@ import com.mytum.model.Registration.SocialLoginResponse;
 import com.mytum.network.APIService;
 import com.mytum.network.RetrofitClient;
 import com.mytum.proectUtil.GPSTracker;
+import com.mytum.proectUtil.LocationPermissions;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
@@ -457,7 +458,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     }
 
     public boolean checkLocationPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (!LocationPermissions.isGranted(this)) {
 
             // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
@@ -469,14 +470,14 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         //Prompt the user once explanation has been shown
-                        ActivityCompat.requestPermissions(LoginActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_LOCATION);
+                        ActivityCompat.requestPermissions(LoginActivity.this, LocationPermissions.foregroundPermissions(), MY_PERMISSIONS_REQUEST_LOCATION);
                     }
                 }).create().show();
 
 
             } else {
                 // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_LOCATION);
+                ActivityCompat.requestPermissions(this, LocationPermissions.foregroundPermissions(), MY_PERMISSIONS_REQUEST_LOCATION);
             }
             return false;
         } else {
@@ -517,29 +518,12 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    // permission was granted, yay! Do the
-                    // location-related task you need to do.
-                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                        GPSTracker mGPS = new GPSTracker(this);
-                        if (mGPS.canGetLocation()) {
-                            mGPS.getLocation();
-                            ProjectUtil.setLongitude(LoginActivity.this, "" + mGPS.getLongitude());
-                            ProjectUtil.setLotitude(LoginActivity.this, "" + mGPS.getLatitude());
-                        } else {
-                            System.out.println("Unable");
-                        }
-                        //Request location updates:
-//                        locationManager.requestLocationUpdates(provider, 400, 1, this);
+                if (LocationPermissions.isGranted(this)) {
+                    GPSTracker tracker = new GPSTracker(this);
+                    if (tracker.canGetLocation()) {
+                        ProjectUtil.setLongitude(this, Double.toString(tracker.getLongitude()));
+                        ProjectUtil.setLotitude(this, Double.toString(tracker.getLatitude()));
                     }
-
-                } else {
-
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-
                 }
                 return;
             }
