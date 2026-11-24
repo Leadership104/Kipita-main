@@ -273,4 +273,5 @@
     <string name="notifications_promotions_channel_id" translatable="false">Promotions channel id</string>
     <string name="notifications_promotions_channel_name">Promotions channel</string>
     <string name="notifications_promotions_channel_description">We send you our best deals!</string>
+    <string name="current_location_unavailable">Could not get your location. Check that location services are on and try again.</string>
 </resources>

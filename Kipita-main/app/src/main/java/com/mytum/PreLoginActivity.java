@@ -12,7 +12,6 @@ import android.content.IntentSender;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -32,23 +31,13 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.facebook.CallbackManager;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResult;
-import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.mytum.model.Login.LoginRequest;
 import com.mytum.model.Login.LoginResponse;
 import com.mytum.model.Registration.RegistrationResponse;
 import com.mytum.model.Registration.RegistratonRequest;
 import com.mytum.network.APIService;
 import com.mytum.network.RetrofitClient;
-import com.mytum.proectUtil.GPSTracker;
+import com.mytum.proectUtil.LocationPermissions;
 import com.mytum.proectUtil.ProjectUtil;
 
 import org.apache.http.HttpEntity;
@@ -70,7 +59,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class PreLoginActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, AuthenticationListener {
+public class PreLoginActivity extends AppCompatActivity implements AuthenticationListener {
 
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     public static final int MY_PERMISSIONS_REQUEST_MEDIA_LOCATION = 999;
@@ -82,7 +71,6 @@ public class PreLoginActivity extends AppCompatActivity implements GoogleApiClie
     private CallbackManager mCallbackManager;
 
     protected static final int REQUEST_CHECK_SETTINGS = 0x1;
-    private GoogleApiClient googleApiClient;
     LinearLayout createaccount, porgetpassword;
     private String token = null;
 
@@ -102,32 +90,13 @@ public class PreLoginActivity extends AppCompatActivity implements GoogleApiClie
             }
         }
 
-        googleApiClient = getAPIClientInstance();
-        if (googleApiClient != null) {
-            googleApiClient.connect();
-        }
-
-
         customDialog = new Dialog(this);
-        LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-        if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            requestGPSSettings();
-        }
-
-
         printHashKey();
         checkLocationPermission();
 //        checkMediaLocationPermission();
     }
 
     //
-
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
 
 
     @Override
@@ -171,67 +140,20 @@ public class PreLoginActivity extends AppCompatActivity implements GoogleApiClie
     }
 
     public boolean checkLocationPermission() {
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.ACCESS_FINE_LOCATION)) {
-
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-                new AlertDialog.Builder(this)
-                        .setTitle("Location Permission")
-                        .setMessage("Kapita would like to access your location for fetching the advisory details, Yelp information and Gallery information based on your selected location or your current location.")
-                        .setPositiveButton("ok", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                //Prompt the user once explanation has been shown
-                                ActivityCompat.requestPermissions(PreLoginActivity.this,
-                                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                                        MY_PERMISSIONS_REQUEST_LOCATION);
-                            }
-                        })
-                        .create()
-                        .show();
-
-//                new AlertDialog.Builder(this)
-//                        .setTitle("Location Permission")
-//                        .setMessage("In order to use Kapita user must provide the location permission for this app. Do you want to close the app")
-//                        .setNegativeButton("Yes", new DialogInterface.OnClickListener() {
-//                            @Override
-//                            public void onClick(DialogInterface dialogInterface, int i) {
-//                                //Prompt the user once explanation has been shown
-//                                finish();
-//                            }
-//                        }).setPositiveButton("No", new DialogInterface.OnClickListener() {
-//                            @Override
-//                            public void onClick(DialogInterface dialogInterface, int i) {
-//                                //Prompt the user once explanation has been shown
-//                                ActivityCompat.requestPermissions(PreLoginActivity.this,
-//                                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-//                                        MY_PERMISSIONS_REQUEST_LOCATION);
-//                            }
-//                        })
-//                        .create()
-//                        .show();
-
-
-            } else {
-                // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_LOCATION);
-            }
-            return false;
-        } else {
-            startActivity(new Intent(PreLoginActivity.this, MainActivity.class));
-            overridePendingTransition(R.anim.in_from_left, R.anim.out_to_right);
-            finish();
+        if (LocationPermissions.isGranted(this)) {
+            openMainActivity();
             return true;
         }
+        ActivityCompat.requestPermissions(this, LocationPermissions.foregroundPermissions(),
+                MY_PERMISSIONS_REQUEST_LOCATION);
+        return false;
+    }
+
+    private void openMainActivity() {
+        if (isFinishing()) return;
+        startActivity(new Intent(this, MainActivity.class));
+        overridePendingTransition(R.anim.in_from_left, R.anim.out_to_right);
+        finish();
     }
 
     public boolean checkMediaLocationPermission() {
@@ -280,33 +202,8 @@ public class PreLoginActivity extends AppCompatActivity implements GoogleApiClie
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    // permission was granted, yay! Do the
-                    // location-related task you need to do.
-                    if (ContextCompat.checkSelfPermission(this,
-                            Manifest.permission.ACCESS_FINE_LOCATION)
-                            == PackageManager.PERMISSION_GRANTED) {
-
-
-                        GPSTracker mGPS = new GPSTracker(this);
-                        if (mGPS.canGetLocation()) {
-                            mGPS.getLocation();
-                            ProjectUtil.setLongitude(PreLoginActivity.this, "" + mGPS.getLongitude());
-                            ProjectUtil.setLotitude(PreLoginActivity.this, "" + mGPS.getLatitude());
-                        } else {
-                            System.out.println("Unable");
-                        }
-                        startActivity(new Intent(PreLoginActivity.this, MainActivity.class));
-                        overridePendingTransition(R.anim.in_from_left, R.anim.out_to_right);
-                        finish();
-
-                        //Request location updates:
-//                        locationManager.requestLocationUpdates(provider, 400, 1, this);
-                    }
-
+                if (LocationPermissions.isGranted(this)) {
+                    openMainActivity();
                 } else {
 
                     // permission denied, boo! Disable the
@@ -353,70 +250,6 @@ public class PreLoginActivity extends AppCompatActivity implements GoogleApiClie
         }
     }
 
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            startActivity(new Intent(PreLoginActivity.this, MainActivity.class));
-            overridePendingTransition(R.anim.in_from_left, R.anim.out_to_right);
-            finish();
-        }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-
-//            locationManager.removeUpdates(this);
-        }
-    }
-
-
-    private void requestGPSSettings() {
-        LocationRequest locationRequest = LocationRequest.create();
-        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        locationRequest.setInterval(2000);
-        locationRequest.setFastestInterval(500);
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest);
-        builder.setAlwaysShow(true);
-        PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi.checkLocationSettings(googleApiClient, builder.build());
-        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
-            @Override
-            public void onResult(LocationSettingsResult result) {
-                final Status status = result.getStatus();
-                switch (status.getStatusCode()) {
-                    case LocationSettingsStatusCodes.SUCCESS:
-                        Log.i("", "All location settings are satisfied.");
-//                        Toast.makeText(getApplication(), "GPS is already enable", Toast.LENGTH_SHORT).show();
-                        break;
-                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                        Log.i("", "Location settings are not satisfied. Show the user a dialog to" + "upgrade location settings ");
-                        try {
-                            status.startResolutionForResult(PreLoginActivity.this, REQUEST_CHECK_SETTINGS);
-                        } catch (IntentSender.SendIntentException e) {
-                            Log.e("Applicationsett", e.toString());
-                        }
-                        break;
-                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                        Log.i("", "Location settings are inadequate, and cannot be fixed here. Dialog " + "not created.");
-                        Toast.makeText(getApplication(), "Location settings are inadequate, and cannot be fixed here", Toast.LENGTH_SHORT).show();
-                        break;
-                }
-            }
-        });
-    }
-
-    private GoogleApiClient getAPIClientInstance() {
-        GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(LocationServices.API).build();
-        return mGoogleApiClient;
-    }
 
     protected void loginRequest(String useranme, String password) {
         ProjectUtil.showDialog(

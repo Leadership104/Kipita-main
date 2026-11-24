@@ -12,7 +12,6 @@ import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.database.Cursor
 import android.location.Location
-import android.location.LocationManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -46,6 +45,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -54,11 +54,13 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.Priority
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
-import com.google.android.gms.location.LocationSettingsStatusCodes
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken
 import com.google.android.libraries.places.api.net.PlacesClient
@@ -97,7 +99,7 @@ import com.mytum.imagepickerlibrary.ui.bottomsheet.SSPickerOptionsBottomSheet
 import com.mytum.model.DaysItemObject
 import com.mytum.model.DeleteGroupList
 import com.mytum.network.RetrofitClient
-import com.mytum.proectUtil.GPSTracker
+import com.mytum.proectUtil.LocationPermissions
 import com.mytum.proectUtil.ProjectUtil
 import com.squareup.picasso.Picasso
 import com.ssimagepicker.app.isAtLeast11
@@ -115,8 +117,7 @@ import java.util.Locale
 
 class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
     SSPickerOptionsBottomSheet.ImagePickerClickListener,
-    ImagePickerResultListener, PickerOptionsBottomSheet.PickerOptionsListener,
-    android.location.LocationListener {
+    ImagePickerResultListener, PickerOptionsBottomSheet.PickerOptionsListener {
     private var doubleBackToExitPressedOnce = false
     var customDialog: Dialog? = null
     var gsc: GoogleSignInClient? = null
@@ -129,12 +130,20 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
     private var tempLayout: LinearLayout? = null
     val MY_PERMISSIONS_REQUEST_LOCATION = 99
     val MY_PERMISSIONS_REQUEST_MEDIA_LOCATION = 999
-    private var googleApiClient: GoogleApiClient? = null
     private var pickerOptions = PickerOptions.default()
     private var imagePicker: ImagePicker? = null
     var locationName: TextView? = null
-    var manager: LocationManager? = null
-    var locationManagerWeather: LocationManager? = null
+    private val locationClient by lazy { LocationServices.getFusedLocationProviderClient(this) }
+    private val locationRequest = LocationRequest.Builder(
+        Priority.PRIORITY_BALANCED_POWER_ACCURACY, 300_000L
+    ).setMinUpdateDistanceMeters(1610f).build()
+    private var locationUpdatesStarted = false
+    private var locationSettingsChecked = false
+    private val locationCallback = object : LocationCallback() {
+        override fun onLocationResult(result: LocationResult) {
+            result.lastLocation?.let(::onLocationChanged)
+        }
+    }
     var fragment_container: FrameLayout? = null
     var root_layout: LinearLayout? = null
     var firstLayout: LinearLayout? = null
@@ -174,7 +183,6 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
     lateinit var llToolbarBack: LinearLayout
     lateinit var textTitle: TextView
     lateinit var imageBack: ImageView
-    private var isFirstTime = false
     val PERMISSION_REQUEST_CODE: Int = 112
     private lateinit var jsonObjectWeatherInfo: JSONObject
     lateinit var logAdapter: DaysAdapter
@@ -242,26 +250,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
         imagePicker = registerImagePicker(this@MainActivity)
         Places.initialize(applicationContext, getString(R.string.google_api_key_ishaan))
         placesClient = Places.createClient(this@MainActivity)
-        googleApiClient = getAPIClientInstance()
         customDialog = Dialog(this@MainActivity)
-        if (googleApiClient != null) {
-            googleApiClient!!.connect()
-        }
-        manager = getSystemService(LOCATION_SERVICE) as LocationManager
-        if (!manager!!.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            requestGPSSettings()
-            manager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 300000L, 1610f, this)
-        }
-        locationManagerWeather = getSystemService(LOCATION_SERVICE) as LocationManager
-        if (!locationManagerWeather!!.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            requestGPSSettings()
-            locationManagerWeather!!.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER,
-                1800000L,
-                80467f,
-                this
-            )
-        }
         val contact_us = findViewById<LinearLayout>(R.id.refresh)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         headerLiner = findViewById<View>(R.id.headerLiner)
@@ -470,11 +459,9 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
 
         closeSeacrch!!.setOnClickListener { view: View? -> searchPopupHide() }
 
-        checkLocationPermission()
-        if (ProjectUtil.getSession(this@MainActivity).equals("1", ignoreCase = true)) {
+        if (checkLocationPermission() && ProjectUtil.getSession(this).equals("1", ignoreCase = true)) {
             checkMediaLocationPermission()
         }
-        fetchCurrentLocation()
         val token = AutocompleteSessionToken.newInstance()
 
         ProjectUtil.getAddress(
@@ -694,49 +681,12 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
         tempLayout!!.visibility = View.VISIBLE
     }
 
-    fun checkLocationPermission(): Boolean {
-        return if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            )
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(
-                    this,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                )
-            ) {
-
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-                AlertDialog.Builder(this)
-                    .setTitle("title_location_permission")
-                    .setMessage("title_location_permission")
-                    .setPositiveButton(
-                        "ok"
-                    ) { dialogInterface, i -> //Prompt the user once explanation has been shown
-                        ActivityCompat.requestPermissions(
-                            this@MainActivity,
-                            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                            MY_PERMISSIONS_REQUEST_LOCATION
-                        )
-                    }
-                    .create()
-                    .show()
-            } else {
-                // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(
-                    this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                    MY_PERMISSIONS_REQUEST_LOCATION
-                )
-            }
-            false
-        } else {
-            true
-        }
+    private fun checkLocationPermission(): Boolean {
+        if (LocationPermissions.isGranted(this)) return true
+        ActivityCompat.requestPermissions(
+            this, LocationPermissions.foregroundPermissions(), MY_PERMISSIONS_REQUEST_LOCATION
+        )
+        return false
     }
 
     fun checkMediaLocationPermission(): Boolean {
@@ -792,58 +742,10 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             MY_PERMISSIONS_REQUEST_LOCATION -> {
-
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.isNotEmpty()
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                ) {
-
-                    // permission was granted, yay! Do the
-                    // location-related task you need to do.
-                    if (ContextCompat.checkSelfPermission(
-                            this,
-                            Manifest.permission.ACCESS_FINE_LOCATION
-                        )
-                        == PackageManager.PERMISSION_GRANTED
-                    ) {
-                        var mGPS = GPSTracker(this)
-                        if (mGPS.canGetLocation()) {
-                            mGPS.location
-//                            ProjectUtil.customToast(
-//                                this,
-//                                "Lat" + mGPS.latitude + "Lon" + mGPS.longitude
-//                            )
-//                            locationName?.text = mGPS.location.provider
-                        } else {
-                            ProjectUtil.customToast(this, "Unabletofind")
-                            println("Unable")
-                        }
-
-
-                        //Request location updates:
-                        if (manager != null) {
-                            manager!!.requestLocationUpdates(
-                                LocationManager.GPS_PROVIDER,
-                                300000L,
-                                1610f,
-                                this
-                            )
-                        }
-                        if (locationManagerWeather != null) {
-                            locationManagerWeather!!.requestLocationUpdates(
-                                LocationManager.GPS_PROVIDER,
-                                1800000L,
-                                80467f,
-                                this
-                            )
-                        }
-                    }
-                } else {
-
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
+                startLocationUpdates()
+                if (ProjectUtil.getSession(this).equals("1", ignoreCase = true)) {
+                    checkMediaLocationPermission()
                 }
-                return
             }
 
             MY_PERMISSIONS_REQUEST_MEDIA_LOCATION -> {
@@ -877,46 +779,53 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
         }
     }
 
-    fun fetchCurrentLocation() {
-        var mGPS = GPSTracker(this)
-        if (mGPS.canGetLocation()) {
-            mGPS.location
-            ProjectUtil.setLongitude(this@MainActivity, "" + mGPS.longitude)
-            ProjectUtil.setLotitude(this@MainActivity, "" + mGPS.latitude)
-            ProjectUtil.setCurrentLongitude(this@MainActivity, "" + mGPS.longitude)
-            ProjectUtil.setCurrentLotitude(this@MainActivity, "" + mGPS.latitude)
-            ProjectUtil.getAddress(
-                ProjectUtil.getLotitude(MyApplication.getInstance().applicationContext),
-                ProjectUtil.getLongitude(MyApplication.getInstance().applicationContext),
-                locationName,
-                this
-            )
-//            locationName?.text = address
-        } else {
-            println("Unable")
+    @SuppressLint("MissingPermission")
+    private fun startLocationUpdates() {
+        if (locationUpdatesStarted || !LocationPermissions.isGranted(this) ||
+            !lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+        ) return
+
+        locationUpdatesStarted = true
+        locationClient.requestLocationUpdates(locationRequest, locationCallback, mainLooper)
+            .addOnFailureListener { error ->
+                locationUpdatesStarted = false
+                Log.w("MainActivity", "Could not start location updates", error)
+            }
+        if (!locationSettingsChecked) {
+            locationSettingsChecked = true
+            val settings = LocationSettingsRequest.Builder().addLocationRequest(locationRequest).build()
+            LocationServices.getSettingsClient(this).checkLocationSettings(settings)
+                .addOnFailureListener(this) { error ->
+                    if (error is ResolvableApiException) {
+                        try {
+                            error.startResolutionForResult(this, LoginActivity.REQUEST_CHECK_SETTINGS)
+                        } catch (exception: SendIntentException) {
+                            Log.w("MainActivity", "Could not open location settings", exception)
+                        }
+                    }
+                }
         }
     }
 
-    override fun onLocationChanged(p0: Location) {
-        if (shouldUseCurrentLocation) {
-            ProjectUtil.setLongitude(this@MainActivity, "" + p0.longitude)
-            ProjectUtil.setLotitude(this@MainActivity, "" + p0.latitude)
-            ProjectUtil.getAddress(
-                ProjectUtil.getLotitude(MyApplication.getInstance().applicationContext),
-                ProjectUtil.getLongitude(MyApplication.getInstance().applicationContext),
-                locationName,
-                this
-            )
-            if (isFirstTime) {
-                reloadCurrentFragment()
-                getAdvisoryCrimeData
-                getAdvisoryWeatherData
-            } else {
-                isFirstTime = true
-            }
+    private fun onLocationChanged(location: Location) {
+        if (!locationUpdatesStarted || !LocationPermissions.isGranted(this)) return
 
-        }
+        val latitude = location.latitude.toString()
+        val longitude = location.longitude.toString()
+        ProjectUtil.setCurrentLotitude(this, latitude)
+        ProjectUtil.setCurrentLongitude(this, longitude)
+        if (!shouldUseCurrentLocation) return
 
+        if (latitude == ProjectUtil.getLotitude(this) &&
+            longitude == ProjectUtil.getLongitude(this)
+        ) return
+
+        ProjectUtil.setLotitude(this, latitude)
+        ProjectUtil.setLongitude(this, longitude)
+        ProjectUtil.getAddress(latitude, longitude, locationName, this)
+        reloadCurrentFragment()
+        getAdvisoryCrimeData
+        getAdvisoryWeatherData
     }
 
     private fun reloadCurrentFragment() {
@@ -950,91 +859,20 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener,
         showMainMenu()
         searchPopupHide()
         ProjectUtil.getCurrentTimeZone()
-        if (shouldUseCurrentLocation) {
-            fetchCurrentLocation()
-//            reloadCurrentFragment()
-        }
-        ProjectUtil.getAddress(
-            ProjectUtil.getLotitude(MyApplication.getInstance().applicationContext),
-            ProjectUtil.getLongitude(MyApplication.getInstance().applicationContext),
-            locationName,
-            this
-        )
-//        locationName?.text = address
-
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            )
-            == PackageManager.PERMISSION_GRANTED
-        ) {
-            if (manager != null) {
-                manager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 300000L, 1610f, this)
-            }
-            if (locationManagerWeather != null) {
-                locationManagerWeather!!.requestLocationUpdates(
-                    LocationManager.GPS_PROVIDER,
-                    1800000L,
-                    80467f,
-                    this
-                )
-            }
-//            locationManager.requestLocationUpdates(provider, 400, 1, this);
+        startLocationUpdates()
+        val latitude = ProjectUtil.getLotitude(this)
+        val longitude = ProjectUtil.getLongitude(this)
+        if (latitude.isNotBlank() && longitude.isNotBlank()) {
+            ProjectUtil.getAddress(latitude, longitude, locationName, this)
         }
         getAdvisoryCrimeData
         getAdvisoryWeatherData
     }
 
-    private fun requestGPSSettings() {
-        val locationRequest = LocationRequest.create()
-        locationRequest.priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
-        locationRequest.interval = 2000
-        locationRequest.fastestInterval = 500
-        val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
-        builder.setAlwaysShow(true)
-        val result =
-            LocationServices.SettingsApi.checkLocationSettings(googleApiClient!!, builder.build())
-        result.setResultCallback { result ->
-            val status = result.status
-            when (status.statusCode) {
-                LocationSettingsStatusCodes.SUCCESS -> {
-                    Log.i("", "All location settings are satisfied.")
-//                    Toast.makeText(application, "GPS is already enable", Toast.LENGTH_SHORT).show()
-                }
-
-                LocationSettingsStatusCodes.RESOLUTION_REQUIRED -> {
-                    Log.i(
-                        "",
-                        "Location settings are not satisfied. Show the user a dialog to" + "upgrade location settings "
-                    )
-                    try {
-                        status.startResolutionForResult(
-                            this@MainActivity,
-                            LoginActivity.REQUEST_CHECK_SETTINGS
-                        )
-                    } catch (e: SendIntentException) {
-                        Log.e("Applicationsett", e.toString())
-                    }
-                }
-
-                LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE -> {
-                    Log.i(
-                        "",
-                        "Location settings are inadequate, and cannot be fixed here. Dialog " + "not created."
-                    )
-                    Toast.makeText(
-                        application,
-                        "Location settings are inadequate, and cannot be fixed here",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
-        }
-    }
-
-    private fun getAPIClientInstance(): GoogleApiClient {
-        return GoogleApiClient.Builder(this)
-            .addApi(LocationServices.API).build()
+    override fun onStop() {
+        locationUpdatesStarted = false
+        locationClient.removeLocationUpdates(locationCallback)
+        super.onStop()
     }
 
     fun requestCameraImage() {
