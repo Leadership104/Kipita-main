@@ -71,6 +71,9 @@ locate.addEventListener("click", () => {
       const latitude = coords.latitude.toFixed(5);
       const longitude = coords.longitude.toFixed(5);
       showMap(latitude + "," + longitude, "Your location", coords.accuracy > 1000 ? "12" : "16");
+      activeLocation.textContent = latitude + ", " + longitude;
+      position = { lat: latitude, lng: longitude };
+      loadCatalog();
       status.textContent = latitude + ", " + longitude + " · Within about " +
         Math.max(1, Math.round(coords.accuracy)).toLocaleString() + " m";
     },
@@ -82,3 +85,104 @@ locate.addEventListener("click", () => {
     { enableHighAccuracy: true, maximumAge: 30000, timeout: 15000 }
   );
 });
+
+const activeLocation = document.querySelector("#active-location");
+const categoryPicker = document.querySelector("#categories");
+const sectionTitle = document.querySelector("#section-title");
+const catalogStatus = document.querySelector("#catalog-status");
+const catalogList = document.querySelector("#catalog-list");
+const retryCatalog = document.querySelector("#retry-catalog");
+const sectionLinks = [...document.querySelectorAll("[data-section]")];
+const categoryButtons = [...document.querySelectorAll("[data-category]")];
+const titles = { places: "Places", advisory: "Advisory", travel: "Travel", perks: "KIPITA Perks" };
+let section = "places";
+let category = "restaurant";
+let position = null;
+let catalogRequest;
+
+function safeLink(value) {
+  try {
+    const link = new URL(value);
+    return ["https:", "http:"].includes(link.protocol) && !link.username && !link.password
+      ? link.href : null;
+  } catch {
+    return null;
+  }
+}
+
+function renderItem(item, currentSection) {
+  const title = item.title || item.name;
+  if (!title) return;
+
+  const card = document.createElement("article");
+  const heading = document.createElement("h2");
+  const url = safeLink(item.link || item.url);
+  heading.textContent = title;
+  if (url || currentSection === "places") {
+    const link = document.createElement("a");
+    const query = title + (position ? " near " + position.lat + "," + position.lng : "");
+    link.textContent = title;
+    link.href = url || "https://www.google.com/maps/search/?" +
+      new URLSearchParams({ api: "1", query });
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    heading.replaceChildren(link);
+  }
+  card.append(heading);
+  if (item.description) {
+    const description = document.createElement("p");
+    description.textContent = item.description;
+    card.append(description);
+  }
+  catalogList.append(card);
+}
+
+async function loadCatalog() {
+  catalogRequest?.abort();
+  const request = new AbortController();
+  catalogRequest = request;
+  const currentSection = section;
+  const params = new URLSearchParams(position || {});
+  if (section === "places") params.set("category", category);
+  catalogStatus.textContent = "Loading " + titles[section] + "…";
+  catalogList.replaceChildren();
+  retryCatalog.hidden = true;
+
+  try {
+    const response = await fetch("/api/catalog/" + section + "?" + params, { signal: request.signal });
+    if (!response.ok) throw new Error("Catalog unavailable");
+    const { items } = await response.json();
+    if (request.signal.aborted) return;
+    for (const item of items) renderItem(item, currentSection);
+    catalogStatus.textContent = catalogList.childElementCount ? "" : "No data found.";
+  } catch {
+    if (request.signal.aborted) return;
+    catalogStatus.textContent = "Kipita could not load " + titles[currentSection] + ".";
+    retryCatalog.hidden = false;
+  }
+}
+
+function selectSection() {
+  const route = window.location.hash.slice(1);
+  if (route && !Object.hasOwn(titles, route)) return;
+  section = route || "places";
+  sectionTitle.textContent = titles[section];
+  categoryPicker.hidden = section !== "places";
+  for (const link of sectionLinks) {
+    if (link.dataset.section === section) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
+  }
+  loadCatalog();
+}
+
+for (const button of categoryButtons) {
+  button.addEventListener("click", () => {
+    category = button.dataset.category;
+    for (const option of categoryButtons) option.setAttribute("aria-pressed", String(option === button));
+    loadCatalog();
+  });
+}
+retryCatalog.addEventListener("click", loadCatalog);
+window.addEventListener("hashchange", selectSection);
+if (window.location.hash === "#location") loadCatalog();
+else selectSection();

@@ -4,22 +4,31 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Find your current location and explore places with Kipita and Google Maps.">
-  <meta name="theme-color" content="#102c34">
-  <title>Kipita | Location finder</title>
+  <meta name="theme-color" content="#de2c42">
+  <title>Kipita</title>
   <link rel="stylesheet" href="styles.css">
   <script src="app.js" defer></script>
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">
-      <span class="brand-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.6" fill="currentColor"/></svg></span>
-      Kipita
-    </div>
+    <div class="brand"><span class="avatar" aria-hidden="true">G</span> Hi, Guest</div>
+    <a href="#location" class="change-location" id="change-location">Change Location</a>
   </header>
-  <main class="workspace">
-    <section class="panel" aria-labelledby="title">
-      <h1 id="title">Find a location</h1>
-      <p class="intro">Search for a place or find where you are on Google Maps.</p>
+  <div class="location-bar" id="active-location">Choose a location</div>
+  <main class="workspace" id="content">
+    <section class="catalog" aria-labelledby="section-title">
+      <h1 id="section-title">Places</h1>
+      <div class="categories" id="categories" aria-label="Place categories">
+        <button type="button" data-category="restaurant" aria-pressed="true">Restaurants</button>
+        <button type="button" data-category="entertainment" aria-pressed="false">Entertainment</button>
+        <button type="button" data-category="shopping" aria-pressed="false">Shopping</button>
+      </div>
+      <p id="catalog-status" role="status"></p>
+      <div class="catalog-list" id="catalog-list"></div>
+      <button id="retry-catalog" type="button" hidden>Try again</button>
+    </section>
+    <section class="panel" aria-labelledby="title" id="location">
+      <h2 id="title">Change Location</h2>
       <form id="search-form">
         <label for="place">Place or address</label>
         <div class="search-row">
@@ -44,5 +53,11 @@
       <iframe id="map" title="Google Maps world view" referrerpolicy="no-referrer" allowfullscreen src="https://www.google.com/maps?q=World&amp;z=2&amp;output=embed"></iframe>
     </section>
   </main>
+  <nav class="bottom-nav" aria-label="Kipita sections">
+    <a href="#places" data-section="places" aria-current="page"><span aria-hidden="true">⌖</span>Places</a>
+    <a href="#advisory" data-section="advisory"><span aria-hidden="true">ⓘ</span>Advisory</a>
+    <a href="#travel" data-section="travel"><span aria-hidden="true">✈</span>Travel</a>
+    <a href="#perks" data-section="perks"><span aria-hidden="true">☆</span>Perks</a>
+  </nav>
 </body>
 </html>

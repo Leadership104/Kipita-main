@@ -85,3 +85,35 @@ iframe { width: 100%; height: clamp(26rem, 72dvh, 55rem); display: block; border
   .workspace { grid-template-columns: minmax(0, 1fr); padding-top: 1rem; gap: .85rem; }
   iframe { height: clamp(20rem, 58dvh, 42rem); }
 }
+
+:root { color: #171717; background: #f5f5f5; --kipita-red: #de2c42; }
+.topbar { justify-content: space-between; background: white; color: inherit; border-bottom: 4px solid var(--kipita-red); gap: .75rem; }
+.brand { font-size: 1.05rem; }
+.avatar { display: grid; place-items: center; width: 2.45rem; height: 2.45rem; border-radius: 50%; color: white; background: #b81d32; }
+.change-location { color: #a3172b; font-weight: 700; padding: .7rem 0; }
+.location-bar { background: #151515; color: white; padding: .75rem max(1rem, calc((100% - 90rem) / 2)); }
+.workspace { padding-bottom: 6.25rem; }
+.catalog { grid-column: 1 / -1; padding: 1.25rem; background: white; border: 1px solid #ddd; border-radius: .65rem; }
+.catalog h1 { font-size: 1.45rem; letter-spacing: normal; }
+.categories { display: flex; flex-wrap: wrap; gap: .45rem; }
+.categories[hidden] { display: none; }
+.categories button { border: 1px solid #ddd; background: #efefef; }
+.categories button[aria-pressed="true"], .search-button { color: white; background: #ba1a30; border-color: #ba1a30; }
+.search-button:hover { background: #a3172b; }
+.panel, .map-panel { border-color: #ddd; border-radius: .65rem; }
+.panel h2 { margin-top: 0; font-size: 1.35rem; }
+.locate-button { background: #fff0f1; color: #9e1529; border-color: #e8aab2; }
+.locate-button:hover { background: #ffe3e8; }
+#map-link { color: #a3172b; }
+#catalog-status { margin-bottom: .65rem; }
+#catalog-status:empty { display: none; }
+.catalog-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: .5rem; }
+.catalog-list:not(:empty) { margin-top: .8rem; }
+.catalog-list article { padding: .8rem; border: 1px solid #ddd; border-radius: .5rem; }
+.catalog-list h2 { font-size: 1rem; margin: 0; }
+.catalog-list a { color: #a3172b; }
+.catalog-list p { margin: .5rem 0 0; line-height: 1.45; }
+.bottom-nav { position: fixed; z-index: 2; bottom: 0; left: 0; right: 0; display: grid; grid-template-columns: repeat(4, 1fr); background: white; border-top: 1px solid #ddd; padding-bottom: env(safe-area-inset-bottom, 0px); }
+.bottom-nav a { padding: .55rem .15rem; text-align: center; color: #202020; text-decoration: none; font-size: .875rem; }
+.bottom-nav a span { display: block; font-size: 1.3rem; line-height: 1.2; }
+.bottom-nav a[aria-current="page"] { background: #ba1a30; color: white; }
