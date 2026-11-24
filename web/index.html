@@ -11,7 +11,7 @@
 </head>
 <body>
   <header class="topbar">
-    <div class="brand"><span class="avatar" aria-hidden="true">G</span> Hi, Guest</div>
+    <button class="brand profile-button" id="profile-button" type="button"><span class="avatar" id="avatar" aria-hidden="true">G</span><span id="greeting">Hi, Guest</span></button>
     <a href="#location" class="change-location" id="change-location">Change Location</a>
   </header>
   <div class="location-bar" id="active-location">Choose a location</div>
@@ -53,6 +53,21 @@
       <iframe id="map" title="Google Maps world view" referrerpolicy="no-referrer" allowfullscreen src="https://www.google.com/maps?q=World&amp;z=2&amp;output=embed"></iframe>
     </section>
   </main>
+  <dialog id="account-dialog" aria-labelledby="account-title">
+    <header class="account-header">
+      <h2 id="account-title">Login</h2>
+      <form method="dialog"><button type="submit">Close</button></form>
+    </header>
+    <form id="login-form">
+      <label for="account-email">Email</label>
+      <input id="account-email" name="email" type="email" autocomplete="username" maxlength="254" required>
+      <label for="account-password">Password</label>
+      <input id="account-password" name="password" type="password" autocomplete="current-password" maxlength="512" required>
+      <button type="submit" class="search-button">Login</button>
+    </form>
+    <button id="sign-out" type="button" hidden>Sign out</button>
+    <p id="account-status" role="status"></p>
+  </dialog>
   <nav class="bottom-nav" aria-label="Kipita sections">
     <a href="#places" data-section="places" aria-current="page"><span aria-hidden="true">⌖</span>Places</a>
     <a href="#advisory" data-section="advisory"><span aria-hidden="true">ⓘ</span>Advisory</a>

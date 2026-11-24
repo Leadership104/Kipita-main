@@ -117,3 +117,11 @@ iframe { width: 100%; height: clamp(26rem, 72dvh, 55rem); display: block; border
 .bottom-nav a { padding: .55rem .15rem; text-align: center; color: #202020; text-decoration: none; font-size: .875rem; }
 .bottom-nav a span { display: block; font-size: 1.3rem; line-height: 1.2; }
 .bottom-nav a[aria-current="page"] { background: #ba1a30; color: white; }
+
+.profile-button { border: 0; background: transparent; color: inherit; padding: 0; }
+#account-dialog { width: min(calc(100% - 2rem), 26rem); border: 1px solid #ddd; border-radius: .65rem; padding: 1.25rem; color: inherit; }
+#account-dialog::backdrop { background: rgb(0 0 0 / .48); }
+.account-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.account-header h2 { margin: 0; }
+#login-form label, #login-form button, #sign-out { margin-top: .9rem; }
+#account-status:empty { display: none; }

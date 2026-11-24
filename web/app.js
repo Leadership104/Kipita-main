@@ -186,3 +186,52 @@ retryCatalog.addEventListener("click", loadCatalog);
 window.addEventListener("hashchange", selectSection);
 if (window.location.hash === "#location") loadCatalog();
 else selectSection();
+
+const accountDialog = document.querySelector("#account-dialog");
+const profileButton = document.querySelector("#profile-button");
+const loginForm = document.querySelector("#login-form");
+const signOut = document.querySelector("#sign-out");
+const accountStatus = document.querySelector("#account-status");
+let accountPending = false;
+
+function renderProfile(profile) {
+  const name = [profile?.firstName, profile?.lastName].filter(Boolean).join(" ") || "Guest";
+  document.querySelector("#greeting").textContent = "Hi, " + name;
+  document.querySelector("#avatar").textContent = Array.from(name)[0].toUpperCase();
+  document.querySelector("#account-title").textContent = profile ? "Account" : "Login";
+  loginForm.hidden = Boolean(profile);
+  signOut.hidden = !profile;
+}
+
+async function updateAccount(method, credentials) {
+  if (accountPending) return;
+  accountPending = true;
+  accountStatus.textContent = method === "GET" ? "" : "Please wait…";
+  try {
+    const response = await fetch("/api/account", {
+      method,
+      headers: { "Content-Type": "application/json", "X-Kipita-Request": "account" },
+      body: credentials ? JSON.stringify(credentials) : undefined
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error);
+    renderProfile(result.profile);
+    accountStatus.textContent = "";
+    if (method !== "GET" && accountDialog.open) accountDialog.close();
+  } catch (error) {
+    accountStatus.textContent = error.message || "Kipita account service is unavailable.";
+  } finally {
+    accountPending = false;
+  }
+}
+
+profileButton.addEventListener("click", () => accountDialog.showModal());
+loginForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const credentials = Object.fromEntries(new FormData(loginForm));
+  if (accountPending) return;
+  loginForm.reset();
+  updateAccount("POST", credentials);
+});
+signOut.addEventListener("click", () => updateAccount("DELETE"));
+updateAccount("GET");

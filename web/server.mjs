@@ -1,5 +1,6 @@
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
+import { account } from "./account.mjs";
 
 const files = {
   "/": ["index.html", "text/html; charset=utf-8"],
@@ -64,6 +65,7 @@ function json(response, status, body) {
 const server = createServer(async (request, response) => {
   try {
     const url = new URL(request.url, "http://localhost");
+    if (url.pathname === "/api/account") return await account(request, response, json);
     if (request.method !== "GET") return json(response, 405, { error: "Method not allowed." });
 
     const file = Object.hasOwn(files, url.pathname) && files[url.pathname];
@@ -79,7 +81,7 @@ const server = createServer(async (request, response) => {
     const result = await catalogAt(match[1], url.searchParams);
     json(response, result.status, result.body);
   } catch {
-    json(response, 502, { error: "Kipita could not load this section. Please try again." });
+    json(response, 502, { error: "Kipita could not complete the request. Please try again." });
   }
 });
 
